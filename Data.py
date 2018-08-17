@@ -35,7 +35,7 @@ if not targetDataCollected:
                 f.write(img.read())
 
 OUTPUT_DIR = 'data/basemap_tiles/'
-URL = "http://geoappext.nrcan.gc.ca/arcgis/services/BaseMaps/CBMT3978/MapServer/WMSServer?request=GetCapabilities&service=WMS"
+URL = "http://maps.geogratis.gc.ca/wms/canimage_en?service=wms&version=1.3.0&request=GetCapabilities"
 mapService = WebMapService(URL, version="1.1.1")
 
 if not inputDataCollected:
@@ -46,7 +46,7 @@ if not inputDataCollected:
             ll_x_ = x_min + ii * dx
             ll_y_ = y_min + jj * dy
             bbox = (ll_x_, ll_y_, ll_x_ + dx, ll_y_ + dy)
-            img = mapService.getmap(layers=['1'], srs='EPSG:4326', bbox=bbox, size=(256, 256), format='image/jpeg',
+            img = mapService.getmap(layers=['canimage'], srs='EPSG:4326', bbox=bbox, size=(256, 256), format='image/jpeg',
                                     transparent=True)
             filename = "{}_{}_{}_{}.jpg".format(bbox[0], bbox[1], bbox[2], bbox[3])
             with open(OUTPUT_DIR + filename, 'wb') as f:
