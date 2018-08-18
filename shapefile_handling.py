@@ -21,12 +21,34 @@ fields = reader.fields[1:]
 field_names = [field[0] for field in fields]
 buffer = []
 
-shapeRecords = reader.iterShapeRecords()
-for sr in shapeRecords:
-    print("CASE")
+# First, I ran into MemoryError constantly. After trying iterShapeRecords and still failing, I realized I was using a 32-bit interpreter
+# switched to a 64-bit interpreter, and watched as >8 GB of RAM was used up before a system crash
+# So now I'm just going to save this stuff incrementally, in a manually-programmed way.
+
+counter = 0
+for sr in reader.iterShapeRecords():
+    if len(buffer) == 100000:
+        with open(output_filename, 'a') as f:
+            if not counter:
+                f.write(json.dumps({"type": "FeatureCollection", "features": buffer}, default=JSONencoder)[:-2])
+                counter += 1
+            else:
+                f.write(', ' + json.dumps(buffer, default=JSONencoder)[1:-1])
+        buffer = []
+        print(counter)
+        counter += 1
+
     atr = dict(zip(field_names, sr.record))
     geom = sr.shape.__geo_interface__
     buffer.append(dict(type="Feature", geometry=geom, properties=atr))
 
-with open(output_filename, 'w') as f:
-    f.write(json.dumps({"type":"FeatureCollection", "features":buffer}, indent=2, default=JSONencoder) + "\n")
+if len(buffer):
+    with open(output_filename, 'a') as f:
+        f.write(', ' + json.dumps(buffer, default=JSONencoder)[1:] + '}')
+    buffer=[]
+else:
+    f.write(']}')
+
+
+# with open(output_filename, 'w') as f:
+#     f.write(json.dumps({"type":"FeatureCollection", "features":buffer}, indent=2, default=JSONencoder) + "\n")
