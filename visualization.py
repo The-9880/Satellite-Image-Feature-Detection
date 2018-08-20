@@ -148,7 +148,7 @@ for ii in range(0,11):
 
         ax = axarr[10-jj, ii]
         image = ndimage.imread(filename)
-        rgb_image = cv2.cvtColor(image, cv2.BGR2RGB)
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         ax.imshow(rgb_image)
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
@@ -159,5 +159,5 @@ for ii in range(0,11):
             y = (1-elem[2])*256 # scale the relative y coordinate up
             ax.scatter(x, y, c=color, s=10)
 
-plt.subplots_adjust(wscape=0, hspace=0)
+plt.subplots_adjust(wspace=0, hspace=0)
 plt.show()
