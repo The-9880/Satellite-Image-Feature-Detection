@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from scipy import ndimage
 import cv2
+import pickle
 
 dict_roadtype = {
     "10":'Highway',
@@ -110,6 +111,30 @@ def calculate_intermediate_points(p1, p2, num_pts):
 def euclidean_distance(p1, p2):
     diff = np.array(p1) - np.array(p2)
     return np.linalg.norm(diff)
+
+def onehot_encode_labels(labels):
+    labelsList = list(np.unique(labels)) # list of the unique road labels
+    encoded = map(lambda x: labelsList.index(x), labels) # maps each road label to their class, given by their index in the unique list.
+    return encoded
+
+def randomize(dataset, labels1, labels2):
+    permutation = np.random.permutation(dataset.shape[0])
+    randomized_dataset = dataset[permutation, :, :, :] # randomizes along the axis of different examples
+    randomized_labels1 = labels1[permutation] # Of course, all are shuffled the same way so that cases and labels aren't mismatched.
+    randomized_labels2 = labels2[permutation]
+    return randomized_dataset, randomized_labels1, randomized_labels2
+
+def onehot_encode(np_array, num_unique_labels):
+    return (np.arange(num_unique_labels) == np_array[:, None].astype(np.float32))
+
+def reformat_data(dataset, labels1, labels2):
+    dataset, labels1, labels2, = randomize(dataset, labels1, labels2)
+    num_unique_labels1 = len(np.unique(labels1))
+    num_unique_labels2 = len(np.unique(labels2))
+    labels1 = onehot_encode(labels1, num_unique_labels1)
+    labels2 = onehot_encode(labels2, num_unique_labels2)
+    return dataset, labels1, labels2
+
 # ------------------------------------
 
 for elem in dict_features:
@@ -161,3 +186,39 @@ for ii in range(0,11):
 
 plt.subplots_adjust(wspace=0, hspace=0)
 plt.show()
+
+input("Continue on to train/val/test set creation")
+
+import os
+
+img_width = 256
+img_height = 256
+img_depth = 3
+num_images = 10000
+
+image_files = os.listdir(INPUT_FOLDER)
+
+dataset = np.ndarray(shape=(num_images, img_width, img_height, img_depth), dtype=np.float32)
+labels_roadtype = []
+labels_roadpresence = np.ndarray(num_images, dtype=np.float32)
+
+for counter, image in enumerate(image_files):
+    filename = INPUT_FOLDER + image
+    roadtype = ''
+    if image in list(d_tile_contents.keys()):
+        tile_contents = d_tile_contents[image]
+        roadtypes = sorted(list(set(elem[0] for elem in tile_contents)))
+        roadtype = "_".join(roadtypes)
+        labels_roadpresence[counter] = 1 # road is present in the tile.
+    else:
+        roadtype = ''
+        labels_roadpresence[counter] = 0
+    labels_roadtype.append(roadtype)
+
+unique, counts = np.unique(labels_roadpresence, return_counts=True)
+print(dict(zip(unique, counts))) # Quick check on the ratio of positive-to-negative cases for road detection
+                                 # for road extraction/tracing, however, this shouldn't really matter.
+
+onehot_labels_roadtype = np.array(list(onehot_encode_labels(labels_roadtype)))
+dataset, labels_roadpresence, onehot_labels_roadtype = reformat_data(dataset, labels_roadpresence, onehot_labels_roadtype)
+
