@@ -222,3 +222,29 @@ print(dict(zip(unique, counts))) # Quick check on the ratio of positive-to-negat
 onehot_labels_roadtype = np.array(list(onehot_encode_labels(labels_roadtype)))
 dataset, labels_roadpresence, onehot_labels_roadtype = reformat_data(dataset, labels_roadpresence, onehot_labels_roadtype)
 
+
+
+# Step 4.2 - Saving datasets as pickle
+
+train_start = 0
+val_start = 1200
+test_start = 1600
+total_images = 2000
+
+output_pickle_file = 'data/satellite_data.pickle'
+
+with open(output_pickle_file, 'wb') as f:
+    save = {
+        'train_dataset': dataset[train_start:val_start, :, :, :],
+        'train_labels_roadtype': labels_roadtype[train_start:val_start],
+        'train_labels_roadpresence': labels_roadpresence[train_start:val_start],
+        'valid_dataset': dataset[val_start:test_start, :, :, :],
+        'valid_labels_roadtype': labels_roadtype[val_start:train_start],
+        'valid_labels_roadpresence': labels_roadpresence[val_start:test_start],
+        'test_dataset': dataset[test_start:total_images, :, :, :],
+        'test_labels_roadtype': labels_roadtype[test_start:total_images],
+        'test_labels_roadpresence': labels_roadpresence[test_start:total_images]
+    }
+    pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+
+print("\nDataset saved to {}".format(output_pickle_file))
