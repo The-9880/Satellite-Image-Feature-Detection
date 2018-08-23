@@ -4,8 +4,8 @@ mapService = WebMapService(URL, version="1.1.1")
 
 OUTPUT_DIR = 'data/image_tiles/'
 
-x_min = -79.409566
-y_min = 43.642541
+x_min = -79.40
+y_min = 43.64
 dx, dy = .02, .02
 num_tiles_x, num_tiles_y = 100,100
 total_no_tiles = num_tiles_x * num_tiles_y
@@ -17,7 +17,7 @@ BOUNDING_BOX = [x_min, y_min, x_max, y_max]
 # Setup has 100 tiles along the x and y directions, each tile being 200x200 -- therefore the bounding box is 20,000 units along both axes
 
 # Flags to control data collection while I'm messing around
-targetDataCollected = True
+targetDataCollected = False
 inputDataCollected = False
 
 # Layer: road_segment_50k. ESPG: 4269 -- This one seems more specific to roads for cars and regular motor vehicles

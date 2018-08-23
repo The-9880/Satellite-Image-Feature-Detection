@@ -50,8 +50,8 @@ d_roadtype_tiles = defaultdict(set) # keys -> road types. tiles containing road 
 
 
 # Functions to use going forward -----
-x_min = -79.409566
-y_min = 43.642541
+x_min = -79.40
+y_min = 43.64
 dx, dy = .02, .02
 num_tiles_x, num_tiles_y = 100,100
 total_no_tiles = num_tiles_x * num_tiles_y
@@ -86,10 +86,10 @@ def retrieve_coordinates(elem):
     return buffer2
 
 def add_to_dict(d1, d2, coordinates, rtype):
-    coordinate_ll_x = int((coordinates[0] // dx) * dx) # Rescale to make a proper multiple of dx
-    coordinate_ll_y = int((coordinates[1] // dy) * dy)
-    coordinate_ur_x = int(coordinate_ll_x + dx)
-    coordinate_ur_y = int(coordinate_ll_y + dy)
+    coordinate_ll_x = (coordinates[0] // dx) * dx # Rescale to make a proper multiple of dx
+    coordinate_ll_y = (coordinates[1] // dy) * dy # Modified to match my coordinates, which are not ints.
+    coordinate_ur_x = (coordinate_ll_x + dx)
+    coordinate_ur_y = (coordinate_ll_y + dy)
     # Each tile in the dataset is named after its coordinates
     # The above transformations takes any coordinates and scales them
     # so that they become the coordinates of the tile they belong to
@@ -204,13 +204,14 @@ labels_roadpresence = np.ndarray(num_images, dtype=np.float32)
 
 for counter, image in enumerate(image_files):
     filename = INPUT_FOLDER + image
-    roadtype = ''
     if image in list(d_tile_contents.keys()):
         tile_contents = d_tile_contents[image]
         roadtypes = sorted(list(set(elem[0] for elem in tile_contents)))
+        print("ROADTYPES: ", roadtypes)
         roadtype = "_".join(roadtypes)
         labels_roadpresence[counter] = 1 # road is present in the tile.
     else:
+        print("NOT FOUND OR NEGATIVE:", image)
         roadtype = ''
         labels_roadpresence[counter] = 0
     labels_roadtype.append(roadtype)
@@ -248,3 +249,4 @@ with open(output_pickle_file, 'wb') as f:
     pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
 
 print("\nDataset saved to {}".format(output_pickle_file))
+print("Num entries in d_tile_contents:", len(d_tile_contents.keys()))
